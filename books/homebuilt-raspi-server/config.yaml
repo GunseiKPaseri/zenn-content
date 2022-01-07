@@ -1,0 +1,20 @@
+title: "自宅サーバ立ててみた"
+summary: "一家に一台自宅サーバ！　あなたのお宅にも一台どうです？"
+topics: ["無料で読める本", "raspberrypi"]
+published: false
+price: 0 # 有料の場合200〜5000
+# 本に含めるチャプターを順番に並べましょう
+chapters:
+  - introduction
+  - select-parts
+  - check-parts
+  - setup-raspi
+  - setup-ssh
+  - setup-hdd
+  - setup-webserver
+  - setup-tls
+  - setup-nextcloud
+  - setup-dns
+  - setup-reverseproxy
+  - cmdlist
+  - trouble
