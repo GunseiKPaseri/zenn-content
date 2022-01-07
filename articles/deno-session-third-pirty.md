@@ -1,5 +1,5 @@
 ---
-title: "Deno向けセッション管理ミドルウェアを実装してみた"
+title: "Opine向けセッション管理ミドルウェアを実装してみた"
 emoji: "🏉"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["deno", "opine", "session"]
@@ -26,7 +26,6 @@ https://zenn.dev/kawarimidoll/articles/8031c2618fedca
 
 こっちもなんか多すぎる
 
-- https://deno.land/x/session
 - https://deno.land/x/sessions
 - https://deno.land/x/session_middleware
 - https://deno.land/x/opine_sessions
