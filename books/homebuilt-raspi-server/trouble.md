@@ -63,3 +63,36 @@ CONTAINER ID   IMAGE     COMMAND      CREATED         STATUS         PORTS  NAME
 $ docker logs reverseproxy-reverse-proxy-1
 ```
 
+## DNSがうまくいかない！
+
+ワイルドカードDNSサービスで代用する場合は以下です
+
+``` nginx:reverseproxy/nginx.conf
+...
+    server {
+        listen 443 ssl;
+-       server_name nextcloud.local.gunseikpaseri.cf;
++       server_name nextcloud.local.gunseikpaseri.cf nextcloud.local.192.168.1.201.nip.io;
+        ssl_certificate /etc/nginx/certs/ownserver-local.crt;
+...
+```
+
+nextcloudにhttps接続させる場合は以下です
+``` nginx:/mnt/hdd/html/config/config.sample.php
+...
+  'trusted_domains' =>
+  array (
+    0 => 'nextcloud.local.gunseikpaseri.cf',
++    1 => 'nextcloud.local.192.168.1.201.nip.io',
+  ),
+  'datadirectory' => '/var/www/html/data',
+...
+```
+
+nip.ioでのssl接続は諦めてください...
+
+## `sudo: unable to resolve host ownserver: Name or service not known`って出る！
+以下のようなコマンドでhostに自分を追加すると解決する
+```
+$ echo $(hostname -I | cut -d\  -f1) $(hostname) | sudo tee -a /etc/hosts
+```

@@ -144,7 +144,7 @@ pipe 4
 ### Dockerによる導入
 こちらもDocker-composeを利用します．
 DNSサーバの実装は複数あり，`BIND`とか`PowerDNS`とか`dnsmasq`とか，最近だとKubernetes関係からから`coredns`があります．
-Go実装であること，設定が容易であること等の理由でなんか`coredns`がワイワイしてて楽しそうなので、こちらを選びます．
+Go実装であること，設定が容易であること等の理由でなんか`coredns`がワイワイしてて楽しそうなので，こちらを選びます．
 
 ```
 $ cd ~
@@ -221,7 +221,7 @@ Corefileはcorednsのプラグインを列挙する形で設定する．
 192.168.1.201 nextcloud.local.gunseikpaseri.cf
 ```
 
-ポートに穴を開けて、いざ実行
+ポートに穴を開けて，いざ実行
 ```
 $ sudo ufw allow 53
 $ docker-compose up -d

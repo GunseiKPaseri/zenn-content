@@ -22,6 +22,11 @@ $ hostname
 $ shutdown -r now
 ```
 
+### 再起動
+```
+$ sudo reboot
+```
+
 ## DNS・ドメイン周辺
 
 ### ファイヤウォールの状態確認

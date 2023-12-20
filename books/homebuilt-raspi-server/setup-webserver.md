@@ -13,37 +13,6 @@ Docker環境が動けばもう勝ちみたいなもんです（本当か？）
 # Dockerの導入
 https://docs.docker.com/engine/install/ubuntu/
 
-`sudo apt install`系で入手できた`docker`，`docker.io`，`docker-engine`は古いバージョンなので消せとのことです．
-```
-$ sudo apt-get remove docker docker-engine docker.io containerd runc
-```
-指示通りにインストールします．aptは何かと反映が遅くなりがちですが，aptの取得先にdockerのページを設定しているようですね．そういう対処方法もあるのか……
-```
-$ sudo apt install \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release
-$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-$ echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-$ sudo apt update
-$ sudo apt install docker-ce docker-ce-cli containerd.io
-```
-Docker-composeもインストールできます．
-```
-$ sudo curl -L https://github.com/docker/compose/releases/download/v2.1.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-```
-正式なバージョンは以下参照
-
-https://github.com/docker/compose/releases
-
-実行権限の付与も行います．
-```
-$ sudo chmod +x /usr/local/bin/docker-compose
-```
-
 かくして，以下の通りインストールできました．
 ```
 $ docker -v
@@ -75,7 +44,7 @@ $ docker run hello-world
 docker: Error response from daemon: failed to create endpoint jovial_almeida on network bridge: failed to add the host (veth2d04f4b) <=> sandbox (vethec11f05) pair interfaces: operation not supported.
 ```
 
-## Apacheサーバの導入
+## Docker上でnginxサーバの導入
 まず，なんか色々な情報が表示できるWebサーバを立てておきましょうか．とりあえずnginxにしとく？
 ```
 $ mkdir webserver

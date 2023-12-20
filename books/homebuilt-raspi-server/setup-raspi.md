@@ -19,7 +19,7 @@ CHOOSE OS > Other general purpose OS > Ubuntu > UBUNTU SERVER 21.10(RPI 3/4/400)
 
 ここから非常に時間がかかるので，その間にラズパイにヒートシンク付けたりファンつけたりしていればいいと思います
 
-ケーブル類を指して、USBTypeC端子に電源を通すと、自動でUbuntuServerが起動する．
+ケーブル類を指して，USBTypeC端子に電源を通すと，自動でUbuntuServerが起動する．
 :::message
 ラズパイの操作には**外付けUSBキーボード**・**HDMI接続モニター**が必要です．また，後述の処理のため一時的に**有線LAN**が必要です．
 :::

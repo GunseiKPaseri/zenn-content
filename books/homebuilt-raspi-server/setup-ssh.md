@@ -13,7 +13,7 @@ title: "SSHの設定"
 ```
 $ sudo ufw status numbered
 ```
-と打つと，番号付きで表示されるので，その番号をメモっておき、以下のコマンドで削除します．`*NUMBER*`を数字に置き換えてください．
+と打つと，番号付きで表示されるので，その番号をメモっておき，以下のコマンドで削除します．`*NUMBER*`を数字に置き換えてください．
 ```
 $ sudo ufw delete *NUMBER*
 ```
@@ -36,7 +36,7 @@ $ sudo vim /etc/avahi/services/ssh.service
 ```
 `<port>22</port>`となっているところを決めた番号に変えます．
 
-そして何よりも，sshd_configの設定を書き換えましょう．
+そしていよいよ，sshd_configの設定を書き換えましょう．
 ```
 $ sudo vim /etc/ssh/sshd_config
 ```
@@ -79,7 +79,7 @@ passwd: password updated successfully
 ```
 パスワードマネージャ等でガッチガチの設定&忘れないよう安全に保管しておきましょう．
 
-ただし、`>>`でファイルに書き込むような時は，`su`コマンドが便利で，そういう時はrootパスワードが必要になることがあります．
+ただし，`>>`でファイルに書き込むような時は，`su`コマンドが便利で，そういう時はrootパスワードが必要になることがあります．
 
 ## ユーザ名の変更
 忘れてた．
@@ -114,7 +114,7 @@ ubuntu : ubuntu adm dialout cdrom floppy sudo audio dip video plugdev netdev lxd
 ```
 sudo usermod -G ubuntu,adm,dialout,cdrom,floppy,sudo,audio,dip,video,plugdev,netdev,lxd *NEWUSERNAME*
 ```
-最後に、`/home/ubuntu/`のファイルを`/home/*NEWUSERNAME*/`にコピーしましょう．
+最後に，`/home/ubuntu/`のファイルを`/home/*NEWUSERNAME*/`にコピーしましょう．
 ワイルドカードが動かないことがあります．
 
 

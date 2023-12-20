@@ -182,7 +182,7 @@ $ docker-compose up -d
 Error response from daemon: failed to create endpoint nextcloud-db-1 on network nextcloud_default: failed to add the host (veth26aca14) <=> sandbox (veth848aad0) pair interfaces: operation not supported
 ```
 
-なんか上手く行かなければ，`docker-compose logs`でログを見たり，`docker ps`でコンテナIDを取得して、`docker exec -i -t *CONTAINER_ID* /bin/bash`でシェルを操作したりできます．
+なんか上手く行かなければ，`docker-compose logs`でログを見たり，`docker ps`でコンテナIDを取得して，`docker exec -i -t *CONTAINER_ID* /bin/bash`でシェルを操作したりできます．
 
 
 起動できると，`https:*domain*:8080`でNextCloudの設定画面になります．
@@ -202,22 +202,119 @@ MySQL/MariaDBを選択
 1分～2分くらいロード時間が入りますので辛抱強く待ちます．俺は90秒くらいだった．
 そこから推奨アプリのインストール画面になる．
 
-
 ### host名設定ミスによる再設定
-一部ドメインが`app`になってしまった．`docker-compose.yml`で指定したサービス名のせいだろうが，その関係で思うようにリンクが飛ばないことが多い．（例：ログインのリダイレクト通知ページのロゴ、アクティビティの画像）．
+
+一部ドメインが`app`になってしまった．`docker-compose.yml`で指定したサービス名のせいだろうが，その関係で思うようにリンクが飛ばないことが多い．（例：ログインのリダイレクト通知ページのロゴ，アクティビティの画像）．
 ここの項目はリバースプロキシの設定の際改めて設定するが，
 `/mnt/hdd/nextcloud/html/config/config.php`の`'overwrite.cli.url' => 'http://app'`のところを変更すれば良い．
 
-
 # NextCloudの設定
+
 ## ファイル暗号化
+
 アプリを開く
 `Default encryption module`を有効にする．
 
-設定を開き、管理＞セキュリティタブを開く．
+設定を開き，管理＞セキュリティタブを開く．
 再ログインが求められている．
 「サーバサイド暗号化を有効にする」をチェック
 
 ## ユーザの追加
+
 ユーザタブで新しいユーザを追加すれば良し
+
+# NextCloudのアップデート
+
+NextCloudのバージョンアップはメジャーアップデートごとに行う必要がある。
+今回は22.2.0から24.0.2に上げる。
+自分のバージョンは以下のようなコマンドで取得できる（ユーザIDは自分の環境では33だったが指示に合わせ変更する）
+```
+$ docker exec -it -u 33 *CONTAINER ID* /var/www/html/occ --version
+```
+
+## バックアップ
+まずNextCloudで作成されたファイルについてバックアップを行い、操作ミスが発生して破壊してしまっても復元できるようにする。
+
+対象と名ᵣうディレクトリサイズを確認しておく。単位はバイト。
+また、数十GB単位のアクセスなので、数秒ほど時間が取られます。
+```
+$ sudo time -p du -bs /mnt/hdd/nextcloud/
+32979507236     /mnt/hdd/nextcloud/
+real 5.13
+user 0.65
+sys 4.43
+```
+
+このディレクトリに対してファイル圧縮を掛けて保存する。様々な圧縮形式があるが、処理時間と圧縮率はトレードオフです。
+ファイルサイズが大きいので圧縮率で選び.tar.xz形式を利用する。
+Ubuntuにはもともと入っている。バージョン1.22以降のtarでは.tarを経由せずに圧縮できる。
+
+```
+$ tar --version
+tar (GNU tar) 1.34
+Copyright (C) 2021 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by John Gilmore and Jay Fenlason.
+```
+
+backupディレクトリを作成しtarコマンドで圧縮する。
+非常に時間がかかるので、内部のファイルを操作できるなら、巨大なファイルを除いておくと良いかもしれない。
+```
+$ mkdir -p /mnt/hdd/backup/nextcloud
+$ cd /mnt/hdd/backup/nextcloud
+$ sudo time -p tar Jcvf backup$(date +%Y%m%d%H%M).tar.xz /mnt/hdd/nextcloud
+...
+real 36272.12
+user 35364.00
+sys 829.91
+$ ls -la
+-rw-r--r-- 1 root          root          24987623420 Jul  1 10:57 backup202207010053.tar.xz
+```
+
+圧縮率は75%、保存されている多くが圧縮ファイルだったので仕方ない。処理時間は約半日。余裕がある時にやったほうが良いだろう。
+
+解凍時tarをsuの権限で実行すれば、所有者情報も含めて復元される。
+
+## バージョンアップ
+
+### 22 →23
+
+nextcloudのdockerを停止
+バージョンを変更
+``` diff yml:~/nextcloud/docker-compose.yml
+...
+  app:
+-    image: nextcloud
++    image: nextcloud:23.0.6
+...
+```
+再実行
+
+```
+$ dokcer-compose up
+```
+
+バージョンが上がっていることを確認する
+
+### 23→24
+
+同様に行う。
+```
+$ docker pull nextcloud:24.0.2
+```
+
+### 不要なイメージの削除
+
+NextCloudは1つで800MB以上使用するので、不要なイメージは削除しておく
+今利用しているバージョンのTAG以外(latestを使わないならばそれも)削除してしまう
+```
+$ docker image ls | grep nextcloud
+$ docker rmi *CONTAINER IMAGE*
+```
+
+
+
 

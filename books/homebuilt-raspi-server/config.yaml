@@ -13,8 +13,11 @@ chapters:
   - setup-hdd
   - setup-webserver
   - setup-tls
+  - setup-tls-certbot
   - setup-nextcloud
   - setup-dns
   - setup-reverseproxy
+  - setup-tmux
+  - setup-n8n
   - cmdlist
   - trouble
