@@ -1,0 +1,33 @@
+{
+  "filters": {
+    "comments": true,
+  },
+  "rules": {
+    // https://github.com/textlint-ja/textlint-rule-preset-ja-technical-writing
+    // 日本語の技術文書向けのtextlintルールをまとめたプリセットです。
+    "preset-ja-technical-writing": {
+      // 一文の長さは関係ないので無視
+      "sentence-length": false,
+      // 軽いノリの技術文書なので感嘆符・疑問符を許可
+      "no-exclamation-question-mark": false,
+      // zenn構文用に「:」を許可
+      "ja-no-mixed-period": {
+        "allowPeriodMarks": [
+          "…",
+          ":"
+        ]
+      },
+      // 点線は重ねて良い。
+      "ja-no-successive-word": {
+        "allow": ["…"]
+      },
+      // 軽いノリの技術文章なので、「思う」とかも使う。
+      "ja-no-weak-phrase": false,
+    },
+    "ja-overlooked-typo": true,
+    "ja-tojihiraki": {
+      "ignore": ["ナイ"],
+      "force-close": ["ナカ"]
+    },
+  }
+}

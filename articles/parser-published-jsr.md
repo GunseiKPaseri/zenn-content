@@ -14,21 +14,21 @@ https://jsr.io/@gunseikpaseri/perfect-ini-parser
 
 https://jsr.io/@gunseikpaseri/perfect-json-parser
 
-
 # 動機
 
-既に、[@std/ini](https://jsr.io/@std/ini) [@std/json](https://jsr.io/@std/json)を始め、信じられない数のパーサが公開されています。
+すでに、[@std/ini](https://jsr.io/@std/ini) [@std/json](https://jsr.io/@std/json)を始め、信じられない数のパーサが公開されています。
 しかし、いずれも設定さえできればよいと平易なものばかり。ご丁寧に保存時に順序を揃えたり整形してします。
 
-現在別件で様々なiniファイルやjsonファイルを統合管理できるようなツールを試作中なのですが、このとき差分が少ない方が嬉しく、現状それをやってくれるパーサが見当たらない（**多すぎて探す気になれなかった**）のです。
+現在別件で様々なiniファイルやjsonファイルを統合管理できるようなツールを試作中です。
+このとき差分が少ないと嬉しいのですが、現状それをやってくれるパーサが見当たらない（**多すぎて探す気になれなかった**）のです。
 
 こんだけあるんだろうから、まああるんでしょう。例えば[json-file-plus](https://www.npmjs.com/package/json-file-plus/)はそれを謳っています。しかし、このパッケージはファイル操作も込みで少し扱いにくいです。
 
-他にも意図しない変更をしないとか、色々条件を重ねていった結果、自分で作ってしまった方が早いかもな、という気持ちになってきました。
+他にも意図しない変更をしないとか、いろいろ条件を重ねていった結果、自分で作ってしまったほうが早いかもな、という気持ちになってきました。
 
 # chevrotain
 
-さて、パーサを書くにも色々あります。
+さて、パーサを書くにもいろいろあります。
 ゼロから実装するか、既存のパーサジェネレータを使うか、その手のサブモジュールを使うか。
 
 - peg.js(メンテナンスされず) => [peggy](https://peggyjs.org/) + [ts-pegjs](https://github.com/metadevpro/ts-pegjs)
@@ -43,7 +43,7 @@ https://jsr.io/@gunseikpaseri/perfect-json-parser
 pegjsはパーサジェネレータであり、pegjsファイルを作成し、pegjsでファイルスクリプトをコンバートして出力されたファイルを使います。
 
 一方でchevrotainはパーササポーターとでも言うべきか、chevrotainの文法でパーサを書くと、それがそのまま動きます。
-正直ファイルサイズをまったく気にしていなかったのですがchevrotainのunpacked sizeは1.35MBあります。今後配布すること等を考えると、必要最低限のコードが生成されるコードジェネレータの方が良かったのかもしれませんが……。
+正直ファイルサイズをまったく気にしていなかったのですがchevrotainのunpacked sizeは1.35MBあります。今後配布すること等を考えると、必要最低限のコードが生成されるコードジェネレータのほうがよかったのかもしれませんが……。
 
 表現できる文法はLL(K)文法であり、PEGのような優先順位の考慮はしてくれず、文法が一意に定まらない可能性があります。
 
@@ -54,11 +54,15 @@ pegjsはパーサジェネレータであり、pegjsファイルを作成し、p
 実際に[PlayGround](https://chevrotain.io/playground/)の文法を見ればよいです。しかし後述しますが、ここで行われている書き方だとTypeScript関係で少し不便があります。
 
 ### 字句解析
+
 もとの文をトークンに分割します。例えば改行だとこんな感じです。
+
 ```ts
 const LF = createToken({ name: "LF", pattern: "\n", label: "\\n" });
 ```
+
 正規表現も使えます。
+
 ```ts
 const WhiteSpace = createToken({
   name: "WhiteSpace",
@@ -67,6 +71,7 @@ const WhiteSpace = createToken({
 ```
 
 作成したTokenを基に`Lexer`クラスを作成します。
+
 ```ts
 const jsonTokens = [
   WhiteSpace,
@@ -93,6 +98,7 @@ export const JsonLexer = new Lexer(jsonTokens);
 `EmbeddedActionsParser`を使うと、例えば数式を与えて計算させる、みたいなところまでをこのクラスの中で実現できます。
 
 構文ルールをルールメソッドで定義します。例えば、`False`トークンと`Null`トークンをいずれかにマッチする`value`というルールを作成するとこんな感じです。
+
 ```ts
 class Parser extends EmbeddedActionsParser {
   constructor() {
@@ -115,7 +121,7 @@ class Parser extends EmbeddedActionsParser {
 
 :::message
 同階層で同じトークンを利用した処理を実行する場合、内部処理で区別がつかなくなってしまうようです。
-そのため、二回目以降は`SUBRULE1`、`SUBRULE2`といった形で指定する必要があります。
+そのため、2回目以降は`SUBRULE1`、`SUBRULE2`といった形で指定する必要があります。
 （基本的に問題があればエラーを出してくれます。）
 :::
 
@@ -123,14 +129,14 @@ class Parser extends EmbeddedActionsParser {
 前から解析する都合上、ORのように分岐発生時、同じものにマッチするルールが先頭にある場合にも通らなくなってしまうことが多いので、前方に関しては括り出しておくとよいです。
 :::
 
-ちなみに元の文では全てコンストラクタ内で定義されていますが、`SUBRULE`等を使う際、型解決できないため、`public`でひとつずつ指定する様式になっています。
+ちなみに元の文ではすべてコンストラクタ内で定義されていますが、`SUBRULE`等を使う際、型解決できないため、`public`でひとつずつ指定する様式になっています。
 
 `RULE`メソッドの戻り値で何らかのオブジェクトを指定すると、`this.SUBRULE()`や`OR`がそのオブジェクトを返してくれます。また、`this.CONSUME().image`でマッチした文字列を取得できます。
 これを利用して、独自の解析結果を返してあげましょう。
 
 ## 使い方
 
-パーサのルールを呼び出せばよいです
+パーサのルールを呼び出せばよいです。
 
 ```ts
 const parser = new JsonParser();
@@ -142,12 +148,11 @@ function parse(text: string) {
 }
 ```
 
-パーサは`parser.input`を更新するたびにリセットされるようです。ここに字句解析結果を代入した上で、構文解析で`public`で公開したルールを呼び出すと、構文解析結果を得ることができます。
-
+パーサは`parser.input`を更新するたびにリセットされるようです。ここに字句解析結果を代入し、構文解析の際に`public`で公開したルールを呼び出すと、構文解析結果を得ることができます。
 
 ## 構文図の表示
 
-[こんな感じ](https://chevrotain.io/diagrams_samples/json.html)の構文図を表示することができます。（Railroad図と言うらしいです）
+[こんな感じ](https://chevrotain.io/diagrams_samples/json.html)の構文図を表示できます。（Railroad図と言うらしいです）
 
 コード側でやっていることは、chevrotainが用意したHTMLファイルに文法のjsonを埋め込んでいるだけです。
 
@@ -174,9 +179,9 @@ https://github.com/mermaid-js/mermaid/pull/4608
 
 解析結果を何やかんやして、動くツールになったので、JSRで公開しました。
 
-JSRは、npmやdeno.landの代替であり、esmの便利機能が色々使え、npm・bun・denoで動作します。
+JSRは、npmやdeno.landの代替であり、esmの便利機能がいろいろ使え、npm・bun・denoで動作します。
 
-例えばコード内に書き込んだJSDocがブラウザから確認出来たり、ドキュメント状態などをスコア化して評価指標として出力してくれたり、Deno・Node.js・Bun・ブラウザそれぞれのサポート状況を明示させることができます。
+例えばコード内に書き込んだJSDocがブラウザから確認できたり、ドキュメント状態などをスコア化して評価指標として出力してくれたり、Deno・Node.js・Bun・ブラウザそれぞれのサポート状況を明示させることができます。
 
 一方、普及率の問題もあるのか、WeeklyDownloadが表示されません。
 また、Homepageセクション・Licenseが無いです。（これはなんとか増やしてほしいですね）
@@ -252,21 +257,25 @@ jsrの不具合として、readmeに表示した`Warning`内のリストが正�
 
 ## スコアを上げる
 
-どうせ公開するならスコアが高い方が嬉しいです。現状は以下がスコアの基準になります。
+どうせ公開するならスコアが高いと嬉しいです。現状は以下がスコアの基準になります。
 
 ### ドキュメントを書く
+
 - exportされた関数・クラス等のシンボルにJSDocを書く
 - Readmeかモジュールドキュメントを書く・例も書く
 
 ### ベストプラクティス
+
 - slow typesを使わない
   - exportされた関数に戻り値の型を明示する
-    - これは`deno lint`でも指摘してくれます
+    - これは`deno lint`でも指摘してくれる
 
 ### 説明性
+
 - JSRでDescriptionを書く
 
 ### 互換性
+
 - Deno・Bun・npm等複数のランタイムとの互換性がある
 - CI/CDワークフローから公開される
 
@@ -282,4 +291,4 @@ jsrの不具合として、readmeに表示した`Warning`内のリストが正�
 
 chevrotainを使ってINIファイルとJSONファイルのパーサを作れました。書き心地は悪くないですが、バンドルサイズなどが気になります。検証は必要そうですね。（いつかやるかも）
 
-とりあえずのところは自分用で使ってみて使い心地試したいですね
+とりあえずのところは自分用で使ってみて使い心地試したいですね。
