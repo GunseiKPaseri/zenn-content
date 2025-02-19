@@ -1,13 +1,13 @@
 ---
 title: "付録 - トラブルシューティング"
 ---
+生じたトラブルのうち本文中に書ききれなかったものを都度メモする。
 
-生じたトラブルのうち本文中に書ききれなかったものを都度メモ
+## ❕/mnt/hddが空に！
 
-## /mnt/hddが空に！
+mountが外れてしまった様子。
 
-mountが外れてしまった様子
-```
+```sh
 $ sudo mdadm --detail /dev/md1
 [sudo] password for gunseikpaseri:
 /dev/md1:
@@ -40,12 +40,12 @@ Consistency Policy : bitmap
        3       8       32        2      active sync   missing
 ```
 
-対応：HDDのUSBケーブルが抜けてた（この間足を引っ掛けた
-対策：再起動したら再び見れるように
+対応：HDDのUSBケーブルが抜けてた（この間足を引っ掛けた）
+対策：再起動したら再び見ることができるようになった。
 
 安心～～～～
 
-## docker-composeしたのにコンテナが無い！
+## ❕docker-composeしたのにコンテナが無い！
 
 ```
 $ docker-compose up -d
@@ -56,18 +56,18 @@ CONTAINER ID   IMAGE     COMMAND      CREATED         STATUS         PORTS  NAME
 # ここに表示されるはずのreverseproxy-reverse-proxy-1が無い
 ```
 
-これは，内部エラーが発生して暗黙的にコンテナが終了しています．
-ログを確認し，これに対処します．
+これは、内部エラーが発生して暗黙的にコンテナが終了しています。
+ログを確認し、これに対処します。
 
+```sh
+docker logs reverseproxy-reverse-proxy-1
 ```
-$ docker logs reverseproxy-reverse-proxy-1
-```
 
-## DNSがうまくいかない！
+## ❕DNSがうまくいかない！
 
-ワイルドカードDNSサービスで代用する場合は以下です
+ワイルドカードDNSサービスで代用する場合は以下です。
 
-``` nginx:reverseproxy/nginx.conf
+```nginx:reverseproxy/nginx.conf
 ...
     server {
         listen 443 ssl;
@@ -77,8 +77,9 @@ $ docker logs reverseproxy-reverse-proxy-1
 ...
 ```
 
-nextcloudにhttps接続させる場合は以下です
-``` nginx:/mnt/hdd/html/config/config.sample.php
+nextcloudにhttps接続させる場合は以下です。
+
+```nginx:/mnt/hdd/html/config/config.sample.php
 ...
   'trusted_domains' =>
   array (
@@ -89,10 +90,12 @@ nextcloudにhttps接続させる場合は以下です
 ...
 ```
 
-nip.ioでのssl接続は諦めてください...
+nip.ioでのssl接続は諦めてください…
 
-## `sudo: unable to resolve host ownserver: Name or service not known`って出る！
-以下のようなコマンドでhostに自分を追加すると解決する
-```
-$ echo $(hostname -I | cut -d\  -f1) $(hostname) | sudo tee -a /etc/hosts
+## ❕`sudo: unable to resolve host ownserver: Name or service not known`って出る！
+
+以下のようなコマンドでhostに自分を追加すると解決する。
+
+```sh
+echo $(hostname -I | cut -d\  -f1) $(hostname) | sudo tee -a /etc/hosts
 ```

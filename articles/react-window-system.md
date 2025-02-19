@@ -172,14 +172,14 @@ https://github.com/oven-sh/bun/issues/5789
 ### Tree Shaking周り
 
 不要なコンポーネントのインポートを防ぐため、Rollupの`output.preserveModules`を`true`にしてファイル分割して提供しています。
-これを有効にするとumd向けのエクスポートに失敗するので、現在cjsとesmのみ同梱してます。~~`cjs`のほうは動作確認してないんだけど~~
+これを有効にするとumd向けのエクスポートに失敗するので、現在cjsとesmのみ同梱してます。~~`cjs`の方は動作確認してないんだけど~~
 
 esmだけでよかったりしませんかね？さすがにまだ早いのかな？
 
 ### CI/CD周り
 
 CI/CDはGitHub Actionsを使っています。
-CIはBunだけでよかったのですが、CDのほうはnpmが無いと駄目そうなのでBunとNode.jsの両方を使っています。
+CIはBunだけでよかったのですが、CDの方はnpmが無いと駄目そうなのでBunとNode.jsの両方を使っています。
 リリース時に直近の`git tag`からバージョンを抜き出して、それを適用するように`npm publish`するようにしています。
 package.jsonのバージョンは触らないという究極実装。
 

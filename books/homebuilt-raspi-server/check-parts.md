@@ -1,38 +1,41 @@
 ---
 title: "パーツの確認"
 ---
+## 🖴HDD・HDDケース
 
-# HDD・HDDケース
+### 🏵️HDDケースの外観
 
-## 外観
-かなりごつい．重い．金属製ケースだったのでひんやりしている．
+![HDDケース外観](/images/books/homebuilt-raspi-server/hddcase_exterior.jpg)
 
-HDDを挿入し，扉を閉めるだけではめ込まれる．逆に外すときは，自然に開くより少し力を込めるように開くと外される
+かなりごつい。重い。金属製ケースだったのでひんやりしている。
 
-## 初期不良チェック
-WD RED Plusに対しての確認なのでWesternDigitalが提供するDigital Dashboard utilityを利用する．
-HDDをフォーマットせずにこれを利用できる．
+HDDを挿入し、扉を閉めるだけではめ込まれる。逆に外すときは、自然に開くより少し力を込めるように開くと外される。
+
+### 初期不良チェック
+
+WD RED Plusに対しての確認なのでWesternDigitalが提供するDigital Dashboard utilityを利用する。
+HDDをフォーマットせずにこれを利用できる。
 
 :::message
-何かとHDDチェックの記事に上がるData LifeGuard Diagnosticsは2020年2月のリリースを最後に終了．
-代わりにDigital Dashboard utilityを利用せよとのこと．
+何かとHDDチェックの記事に上がるData LifeGuard Diagnosticsは2020年2月のリリースを最後に終了。
+代わりにDigital Dashboard utilityを利用せよとのこと。
 
 参考：https://support.wdc.com/downloads.aspx?p=3&lang=jp
-
 :::
 
 https://support.wdc.com/downloads.aspx?lang=jp&p=279
 
+![Dashboardの外観](/images/books/homebuilt-raspi-server/Dashboard.png)
 
+今回は三台とも問題ない様子。
 
-今回は三台とも問題ない様子
+## 🍓ラズパイ
 
+### 🏵️ラズパイの外観
 
-# ラズパイ
-## 外観
+![ラズパイ外観](/images/books/homebuilt-raspi-server/raspi_exterior.jpg)
+ちっちゃいですね。
 
-ちっちゃいですね．
+### ☑動作確認
 
-## 動作確認
-なんかOSインストールしたほうが早そうなのでそっちへ
-
+なんかOSインストールした方が早そうなのでそちらで。

@@ -1,20 +1,24 @@
 ---
 title: "NextCloudの導入"
 ---
-# NextCloudとは
-オンプレミス型ウェブストレージ，とでもいうべきでしょうか．ようはDropbox・GDrive等のオンプレ版です．
-類似サービスにはフォーク元の**OwnCloud**がありますが，こちらの方が開発が積極的です．
 
-# NextCloudの導入
+## ☁NextCloudとは
+
+オンプレミス型ウェブストレージ、とでもいうべきでしょうか。ようはDropbox・GDrive等のオンプレ版です。
+類似サービスにはフォーク元の**OwnCloud**がありますが、NextCloudの方が積極的に開発されています。
+
+## ⏬NextCloudの導入
+
 このへんとか？
 
 https://denor.jp/docker-for-windows%E3%81%A7nextcloud%E3%82%B5%E3%83%BC%E3%83%90%E6%A7%8B%E7%AF%89
 
+```sh
+mkdir nextcloud
+vim ./nextcloud/docker-compose.yml
+vim ./nextcloud/.env
 ```
-$ mkdir nextcloud
-$ vim ./nextcloud/docker-compose.yml
-$ vim ./nextcloud/.env
-```
+
 ``` yml:docker-compose.yml
 version: '3.7'
 volumes:
@@ -64,9 +68,11 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
 ```
-appの`hostname`は，アプリでも利用されるので，自身のアドレスを入力して上げる必要があります．
 
-また，`~/webserver/docker-compose.yml`のポートも修正しておきます．
+appの`hostname`は、アプリでも利用されるので、自身のアドレスを入力してあげる必要があります。
+
+また、`~/webserver/docker-compose.yml`のポートも修正しておきます。
+
 ``` diff yml:docker-compose.yml
 version: "3"
 services:
@@ -165,30 +171,35 @@ ENV_MYSQL_PASSWORD=安全なパス
 
 コンテナ名で名前解決できるんですねぇ……
 
-ディレクトリを作っておかないと止まります．ファイヤウォールの`8080`ポートも空けておきます．
-```
-$ mkdir /mnt/hdd/nextcloud
-$ mkdir /mnt/hdd/nextcloud/html
-$ mkdir /mnt/hdd/nextcloud/mysql
-$ sudo ufw allow 8080
-```
-いざ実行します．
-```
-$ docker-compose up -d
+ディレクトリを作っておかないと止まります。ファイヤウォールの`8080`ポートも空けておきます。
+
+```sh
+mkdir /mnt/hdd/nextcloud
+mkdir /mnt/hdd/nextcloud/html
+mkdir /mnt/hdd/nextcloud/mysql
+sudo ufw allow 8080
 ```
 
-以下のようなエラーが出た場合は`$ sudo apt install linux-modules-extra-raspi`しましょう．
+いざ実行します。
+
+```sh
+docker-compose up -d
 ```
+
+以下のようなエラーが出た場合は`$ sudo apt install linux-modules-extra-raspi`しましょう。
+
+```txt
 Error response from daemon: failed to create endpoint nextcloud-db-1 on network nextcloud_default: failed to add the host (veth26aca14) <=> sandbox (veth848aad0) pair interfaces: operation not supported
 ```
 
-なんか上手く行かなければ，`docker-compose logs`でログを見たり，`docker ps`でコンテナIDを取得して，`docker exec -i -t *CONTAINER_ID* /bin/bash`でシェルを操作したりできます．
+うまくいかなければ、`docker-compose logs`でログを見たり、`docker ps`でコンテナIDを取得して、`docker exec -i -t *CONTAINER_ID* /bin/bash`でシェルを操作したりできます。
 
 
-起動できると，`https:*domain*:8080`でNextCloudの設定画面になります．
+起動できると、`https:*domain*:8080`でNextCloudの設定画面になります。
 
-データフォルダは，既にdocker-composeでマウントしているのでそのまま．
-MySQL/MariaDBを選択
+データフォルダは、すでにdocker-composeでマウントしているのでそのまま。
+MySQL/MariaDBを選択する。
+
 | 項目名                | 設定値                   |
 | --------------------- | ------------------------ |
 |データベースのユーザ名 | `nextcloud`              |
@@ -196,48 +207,50 @@ MySQL/MariaDBを選択
 |データベース名         | `nextcloud`              |
 |データベースのホスト名 | `db:3306`                |
 
-名前解決が`docker-compose.yml`で決めた名前になるのはここでも同じ．
+名前解決が`docker-compose.yml`で決めた名前になるのはここでも同じ。
 
+1分～2分くらいロード時間が入りますので辛抱強く待ちます。俺は90秒くらいだった。
+そこから推奨アプリのインストール画面になる。
 
-1分～2分くらいロード時間が入りますので辛抱強く待ちます．俺は90秒くらいだった．
-そこから推奨アプリのインストール画面になる．
+### ⚙host名設定ミスによる再設定
 
-### host名設定ミスによる再設定
+一部ドメインが`app`になってしまった。`docker-compose.yml`で指定したサービス名のせいだろうが、その関係で思うようにリンク先に飛ばないことが多い。（例：ログインのリダイレクト通知ページのロゴ、アクティビティの画像）。
+ここの項目はリバースプロキシの設定の際改めて設定するが、
+`/mnt/hdd/nextcloud/html/config/config.php`の`'overwrite.cli.url' => 'http://app'`のところを変更すればよい。
 
-一部ドメインが`app`になってしまった．`docker-compose.yml`で指定したサービス名のせいだろうが，その関係で思うようにリンクが飛ばないことが多い．（例：ログインのリダイレクト通知ページのロゴ，アクティビティの画像）．
-ここの項目はリバースプロキシの設定の際改めて設定するが，
-`/mnt/hdd/nextcloud/html/config/config.php`の`'overwrite.cli.url' => 'http://app'`のところを変更すれば良い．
+## ⚙NextCloudの設定
 
-# NextCloudの設定
-
-## ファイル暗号化
+### 🔒ファイル暗号化
 
 アプリを開く
-`Default encryption module`を有効にする．
+`Default encryption module`を有効にする。
 
-設定を開き，管理＞セキュリティタブを開く．
-再ログインが求められている．
-「サーバサイド暗号化を有効にする」をチェック
+設定を開き、管理＞セキュリティタブを開く。
+再ログインが求められている。
+「サーバサイド暗号化を有効にする」をチェックする。
 
-## ユーザの追加
+### 👤ユーザの追加
 
-ユーザタブで新しいユーザを追加すれば良し
+ユーザタブで新しいユーザを追加すれば良し。
 
-# NextCloudのアップデート
+## 🆙NextCloudのアップデート
 
 NextCloudのバージョンアップはメジャーアップデートごとに行う必要がある。
 今回は22.2.0から24.0.2に上げる。
 自分のバージョンは以下のようなコマンドで取得できる（ユーザIDは自分の環境では33だったが指示に合わせ変更する）
-```
-$ docker exec -it -u 33 *CONTAINER ID* /var/www/html/occ --version
+
+```sh
+docker exec -it -u 33 *CONTAINER ID* /var/www/html/occ --version
 ```
 
-## バックアップ
+### 💾バックアップ
+
 まずNextCloudで作成されたファイルについてバックアップを行い、操作ミスが発生して破壊してしまっても復元できるようにする。
 
 対象と名ᵣうディレクトリサイズを確認しておく。単位はバイト。
 また、数十GB単位のアクセスなので、数秒ほど時間が取られます。
-```
+
+```sh
 $ sudo time -p du -bs /mnt/hdd/nextcloud/
 32979507236     /mnt/hdd/nextcloud/
 real 5.13
@@ -249,7 +262,7 @@ sys 4.43
 ファイルサイズが大きいので圧縮率で選び.tar.xz形式を利用する。
 Ubuntuにはもともと入っている。バージョン1.22以降のtarでは.tarを経由せずに圧縮できる。
 
-```
+```sh
 $ tar --version
 tar (GNU tar) 1.34
 Copyright (C) 2021 Free Software Foundation, Inc.
@@ -261,8 +274,9 @@ Written by John Gilmore and Jay Fenlason.
 ```
 
 backupディレクトリを作成しtarコマンドで圧縮する。
-非常に時間がかかるので、内部のファイルを操作できるなら、巨大なファイルを除いておくと良いかもしれない。
-```
+非常に時間がかかるので、内部のファイルを操作できるなら、巨大なファイルは予め除いておくとよいかもしれない。
+
+```sh
 $ mkdir -p /mnt/hdd/backup/nextcloud
 $ cd /mnt/hdd/backup/nextcloud
 $ sudo time -p tar Jcvf backup$(date +%Y%m%d%H%M).tar.xz /mnt/hdd/nextcloud
@@ -274,16 +288,17 @@ $ ls -la
 -rw-r--r-- 1 root          root          24987623420 Jul  1 10:57 backup202207010053.tar.xz
 ```
 
-圧縮率は75%、保存されている多くが圧縮ファイルだったので仕方ない。処理時間は約半日。余裕がある時にやったほうが良いだろう。
+圧縮率は75%、保存されている多くが圧縮ファイルだったので仕方ない。処理時間は約半日。余裕があるときにやった方がよいだろう。
 
 解凍時tarをsuの権限で実行すれば、所有者情報も含めて復元される。
 
-## バージョンアップ
+### 🆙バージョンアップ
 
-### 22 →23
+#### 22 →23
 
-nextcloudのdockerを停止
-バージョンを変更
+1. nextcloudのdockerを停止する
+2. バージョンを変更する
+
 ``` diff yml:~/nextcloud/docker-compose.yml
 ...
   app:
@@ -291,30 +306,29 @@ nextcloudのdockerを停止
 +    image: nextcloud:23.0.6
 ...
 ```
-再実行
 
+3. 再実行
+
+```sh
+dokcer-compose up
 ```
-$ dokcer-compose up
-```
 
-バージョンが上がっていることを確認する
+4. バージョンが上がっていることを確認する
 
-### 23→24
+#### 23→24
 
 同様に行う。
-```
-$ docker pull nextcloud:24.0.2
+
+```sh
+docker pull nextcloud:24.0.2
 ```
 
-### 不要なイメージの削除
+#### 📎不要なイメージの削除
 
 NextCloudは1つで800MB以上使用するので、不要なイメージは削除しておく
-今利用しているバージョンのTAG以外(latestを使わないならばそれも)削除してしまう
+今利用しているバージョンのTAG以外(latestを使わないならばそれも)削除してしまう。
+
+```sh
+docker image ls | grep nextcloud
+docker rmi *CONTAINER IMAGE*
 ```
-$ docker image ls | grep nextcloud
-$ docker rmi *CONTAINER IMAGE*
-```
-
-
-
-

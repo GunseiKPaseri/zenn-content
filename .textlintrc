@@ -14,7 +14,10 @@
       "ja-no-mixed-period": {
         "allowPeriodMarks": [
           "…",
-          ":"
+          ":",
+          "～",
+          "！",
+          "|"
         ]
       },
       // 点線は重ねて良い。
@@ -23,11 +26,12 @@
       },
       // 軽いノリの技術文章なので、「思う」とかも使う。
       "ja-no-weak-phrase": false,
+      "max-kanji-continuous-len": false
     },
     "ja-overlooked-typo": true,
     "ja-tojihiraki": {
-      "ignore": ["ナイ"],
-      "force-close": ["ナカ"]
+      "ignore": ["ナイ", "ワカラ"],
+      "force-close": ["ナカ", "ホウ"]
     },
   }
 }

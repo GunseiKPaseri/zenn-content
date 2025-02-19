@@ -1,49 +1,60 @@
 ---
 title: "SSL/TSLのセットアップ"
 ---
+## SSL/TLSとは
 
-# SSL/TLSとは
-雑に言ってしまえば，HTTPS対応をしようという話です．
-このご時世HTTPS化しないとやりにくいことも多いみたいなので，早めに対応してしまいましょう．
-https化してたら，嬉しいだろ．
-SSLは，HTTPS以外にもSMTP(メール)とかPOP3(メール)等様々なウェブ上の通信を保護できるもっと広い存在です．
+雑に言ってしまえば、HTTPS対応をしようという話です。
+このご時世HTTPS化しないとやりにくいことも多いみたいなので、早めに対応してしまいましょう。
+https化してたら、嬉しいだろ。
+SSLは、HTTPS以外にもSMTP(メール)とかPOP3(メール)等様々なウェブ上の通信を保護できるもっと広い存在です。
 
-ちなみにSSLは**深刻な脆弱性**があったりなんだりで名称が**TLS**に変わってます．
-なので，本当はTLSと言うべきなんですがSSLが定着しすぎたため，諦めて両方併記しているという事情です．
+ちなみにSSLは**深刻な脆弱性**があったりなんだりで名称が**TLS**に変わってます。
+なので、本当はTLSと言うべきなんですがSSLが定着しすぎたため、諦めて両方併記しているという事情です。
+厳密にいえばそれSSLじゃないよとかそういう場面は多々あるんですが、空気を読んであげましょう。
 
-# 必要なこと
-まぁ原理だ何だは各々勉強してもらって，必要なのは**SSL証明書**です．
-証明書自体はコマンドで簡単に作れるのですが，その証明書が正当であること（第三者がすり替えた偽物でないこと）を保証するために，**認証局**に署名してもらいます．
-この認証局もより上位の認証局に署名してもらい～～ということをして，その大元となっている**ルート証明書**はブラウザに組み込まれている，とかそういう具合です．
+## 必要なこと
 
-で，じゃあ自分も認証局とやらに署名してもらおうかと思うのですが，ローカルドメインだとできません．所有者が一人であることが前提ですから，ローカルのはダメです．
-というわけで，この辺を自分で作ります．
+まぁ原理だ何だは各々勉強してもらって、必要なのは**TLS証明書**です。
+証明書自体はコマンドで簡単に作れるのですが、その証明書が正当であること（第三者がすり替えた偽物でないこと）を保証するために、**認証局**に署名してもらいます。
+この認証局もより上位の認証局に署名してもらい～～ということをして、その大元となっている**ルート証明書**はブラウザに組み込まれている、とかそういう具合です。
 
-# なんかいろいろな変化
-とにかく仕様変更の通知が多く，おそらく準拠してないとキレられるので，頑張りましょう．
+で、じゃあ自分も認証局とやらに署名してもらおうかと思うのですが、ローカルドメインだとできません。所有者が一人であることを前提としているので、自分で好き勝手に名乗れるようなものはダメです。
+というわけで、この辺を自分で作ります。
+
+:::message
+あとでLet's encryptを利用するものに変更するパートがあります。
+:::
+
+## なんかいろいろな変化
+
+とにかく仕様変更の通知が多く、おそらく準拠してないとキレられるので、頑張りましょう。
 
 https://ssl.sakura.ad.jp/column/ssl-90days/
 
 https://college.globalsign.com/blog/cabrowserforum_210810/
 
-# 認証局の作成
-認証局の作成には`openssl`のコマンドを使い専用ディレクトリを構築し～～という手順を踏むことになります．
-しかし，コマンド打ったり何だり面倒だし自動化も考えるとなぁ…と思っていたところ，どうも`easy-ca`といういい感じのものがあった……
-過去形なのは色んな人がフォークしたり何だりで使ってる感じがあるところですね．
+## 認証局の作成
+
+認証局の作成には `openssl`のコマンドを使い専用ディレクトリを構築し～～という手順を踏むことになります。
+しかし、コマンド打ったり何だり面倒だし自動化も考えるとなぁ…と思っていたところ、どうも `easy-ca`といういい感じのものがあった……
 
 https://qiita.com/softark/items/cb92f1ebed8b4b6c55b4
 
-お借りしながらやっていきましょう．
-## 組織情報の設定
+お借りしながらやっていきましょう。
+
+### 組織情報の設定
+
+```sh
+mkdir ~/ssh
+cd ~/ssh
+git clone https://github.com/softark/easy-ca.git
+cd easy-ca
+vim defaults.conf
 ```
-$ mkdir ~/ssh
-$ cd ~/ssh
-$ git clone https://github.com/softark/easy-ca.git
-$ cd easy-ca
-$ vim defaults.conf
-```
-まず，証明書署名要求のデフォルト値の設定をします．
-更新などを考えると，これらの値は無闇に変更されないほうが良いでしょう．
+
+まず、証明書署名要求のデフォルト値を設定します。
+更新などを考えると、これらの値は無闇に変更されない方がよいでしょう。
+
 | 属性値 | 意味       |
 | ------ | ---------- |
 | C      | 国(二文字) |
@@ -51,9 +62,10 @@ $ vim defaults.conf
 | L      | 都市・地域 |
 | O      | 組織名     |
 | OU     | 部署名     |
-組織名だのはまぁ，お遊びですね．架空の会社作ったりしても楽しいんじゃないですかね．
 
-``` diff ini:defaults.conf
+組織名だのはまぁ、お遊びですね。どうせローカルなので架空の会社作ったりしても楽しいんじゃないですかね。
+
+```diff
 -   CA_DOMAIN="bogus.com"
 +   CA_DOMAIN="ownserver.local"
 
@@ -68,15 +80,21 @@ $ vim defaults.conf
 -   CA_CERT_OU="Operations"
 +   CA_CERT_OU="GunseiKPaseri"
 ```
-## 有効期限の設定
-`templates/*.tpl`にはそれぞれの証明書用の設定が含まれている．有効期限については色々設定しておく．
-色々あるが，httpsに関係するのは`root.tpl`・`signing.tpl`・`server.tpl`だろう．
-### ルート証明書
-デフォルトでは5年になっている．30年ぐらいにしておく．30年後どうなってるかは知らん．
+
+### 有効期限の設定
+
+`templates/*.tpl`にはそれぞれの証明書用の設定が含まれている。有効期限についてはいろいろ設定しておく。
+httpsに関係するのは `root.tpl`・`signing.tpl`・`server.tpl`だろう。
+
+#### ルート証明書
+
+デフォルトでは5年になっている。30年ぐらいにしておく。30年後どうなってるかは知らん。
+
+```sh
+vim templates/root.tpl
 ```
-$ vim templates/root.tpl
-```
-``` diff ini:root.tpl
+
+```diff
 [req]
 ...
 -   default_days            = 1826                     # How long to certify for
@@ -86,38 +104,49 @@ $ vim templates/root.tpl
 -   default_days            = 1826                       # How long to certify for
 +   default_days            = 10958                      # How long to certify for
 ```
-### 中間証明書
-デフォルトでは2年だが，これも10年ぐらいにしておく．意味あるのかしらん．
+
+#### 中間証明書
+
+デフォルトでは2年だが、これも10年ぐらいにしておく。意味あるのかしらん。
+
+```sh
+vim templates/signing.tpl
 ```
-$ vim templates/signing.tpl
-```
-``` diff ini:signing.conf
+
+```diff
 [req]
 ...
 -   default_days            = 730                      # How long to certify for
 +   default_days            = 10958                    # How long to certify for
 ...
 ```
-### サーバ証明書
-デフォルトでは2年だが，390日とか90日とかゆくゆく縮める予定と話題になってたので，いっそ90日にしてしまった．あとで自動化するだろうから短くても構わんやろの精神．
+
+#### サーバ証明書
+
+デフォルトでは2年だが、390日とか90日とかゆくゆく縮める予定と話題になってたので、いっそ90日にしてしまった。あとで自動化するだろうから短くても構わんやろの精神。
 ::: message alert
-何故かこれだけ効かんかった
+なぜかこれだけ効かんかった。
 :::
+
+```sh
+vim templates/server.tpl
 ```
-$ vim templates/server.tpl
-```
-``` diff ini:server.tpl
+
+```diff
 [req]
 ...
 -   default_days            = 730                     # How long to certify for
 +   default_days            = 90                      # How long to certify for
 ...
 ```
-## ルート証明書作成
-`-d`以下では識別可能な名前を付与する．
-パスワードはちゃんと保存しておこう．
-`PKCS11`を利用可能にするかみたいなのが問われるが，YubiKeyを使う系の話になるので，`N`を選択する．
-```
+
+### ルート証明書作成
+
+`-d`以下では識別可能な名前を付与する。
+パスワードはちゃんと保存しておこう。
+`PKCS11`を利用可能にするかみたいなのが問われるが、YubiKeyを使う系の話になるので、`N`を選択する。
+
+```sh
 $ ./create-root-ca -d own-root-ca
 [*] Creating root CA in dir 'own-root-ca'
 [*] Initializing CA home
@@ -167,39 +196,50 @@ Using configuration from ca/ca.conf
 [*] Copying toolchain
 [!] Root CA initialized.
 ```
-先程指定した名前（`own-root-ca`）のディレクトリ内に認証局としての機能として必要な諸々が作成される．
-|             ファイル          | 意味             |
-| ----------------------------- | ---------------- |
-|$ROOT_CA_DIR/ca/ca.crl         | 証明書失効リスト |
-|$ROOT_CA_DIR/ca/ca.crt         | SSL証明書        |
-|$ROOT_CA_DIR/ca/ca.csr         | 証明書署名要求   |
-|$ROOT_CA_DIR/ca/ca.pub         | 証明書公開鍵     |
-|$ROOT_CA_DIR/ca/private/ca.key | 証明書秘密鍵     |
 
-### 証明書の保存
-**SSL証明書**を所定の位置・自作Webサーバ内にコピーする．名前が変更されていることに注意して．
+先程指定した名前（`own-root-ca`）のディレクトリ内に認証局としての機能として必要な諸々が作成される。
+
+| ファイル                       | 意味             |
+| ------------------------------ | ---------------- |
+| $ROOT_CA_DIR/ca/ca.crl         | 証明書失効リスト |
+| $ROOT_CA_DIR/ca/ca.crt         | SSL証明書        |
+| $ROOT_CA_DIR/ca/ca.csr         | 証明書署名要求   |
+| $ROOT_CA_DIR/ca/ca.pub         | 証明書公開鍵     |
+| $ROOT_CA_DIR/ca/private/ca.key | 証明書秘密鍵     |
+
+#### 証明書の保存
+
+**SSL証明書**を所定の位置・自作Webサーバ内にコピーする。名前が変更されていることに注意して。
+
+```sh
+sudo mkdir -p /etc/pki/tls/certs/
+sudo cp own-root-ca/ca/ca.crt /etc/pki/tls/certs/own-root-ca.crt
 ```
-$ sudo mkdir -p /etc/pki/tls/certs/
-$ sudo cp own-root-ca/ca/ca.crt /etc/pki/tls/certs/own-root-ca.crt
+
+#### 証明書失効リストのコピー
+
+**証明書失効リスト**をWebサーバに反映しやすくできるよう `.sh`も作っておきましょう。
+
+```sh
+cd own-root-ca
+vim bin/copycrl.sh
 ```
-### 証明書失効リストのコピー
-**証明書失効リスト**をWebサーバに反映しやすくできるよう`.sh`も作っておきましょう．
-```
-$ cd own-root-ca
-$ vim bin/copycrl.sh
-```
-``` sh:copycrl.sh
+
+```sh:copycrl.sh
 mkdir -p ~/webserver/ca/
 cp ca/ca.crl ~/webserver/ca/ca.crl
 ```
-```
+
+```sh
 chmod +x bin/copycrl.sh
 bin/copycrl.sh
 ```
 
-## 中間CA証明書の作成
-作業ディレクトリがルートディレクトリであるところと，ルートCAのパスワードが求められることを除けば大体ルート証明書と同様の流れである．
-```
+### 中間CA証明書の作成
+
+作業ディレクトリがルートディレクトリであるところと、ルートCAのパスワードが求められることを除けば大体ルート証明書と同様の流れです。
+
+```sh
 $ cd own-root-ca/
 $ ./bin/create-signing-ca -d own-intermediate-ca
 
@@ -254,49 +294,59 @@ ca/ca.crt: OK
 [*] Copying toolchain
 [!] Signing sub-CA initialized.
 ```
-中間CAはルートCAの中に作成される．
 
-中間証明書もサーバの所定の場所に置いておく．
-```
-$ sudo cp ca/ca.crt /etc/pki/tls/certs/own-intermediate-ca.crt
-```
+中間CAはルートCAの中に作成される。
 
-中間証明書の証明書無効化リストも配布しやすいように`sh`を作っておく
-```
-$ cp ../bin/copycrl.sh ./bin/
+中間証明書もサーバの所定の場所に置いておく。
+
+```sh
+sudo cp ca/ca.crt /etc/pki/tls/certs/own-intermediate-ca.crt
 ```
 
-そして，サーバ証明書有効期限の設定が何故かここにうまく反映されてないので
-``` diff ini:ca/ca.conf
+中間証明書の証明書無効化リストも配布しやすいように `sh`を作っておく。
+
+```sh
+cp ../bin/copycrl.sh ./bin/
+```
+
+そして、サーバ証明書有効期限の設定がなぜかここにうまく反映されてないので。
+
+```diff
 ...
 [ sign_ca ]
 -   default_days            = 730                        # How long to certify for
 +   default_days            = 90                         # How long to certify for
 ```
 
-# サーバ証明書の作成・登録
-## サーバ証明書の作成
+## サーバ証明書の作成・登録
 
-中間CAで`bin/create-server`を実行する．
-`-s`オプションでサーバの説明のような名称を設定，`-a` で使用されるドメインを指定．複数設定できる．
-今回は`ownserver.local`・`www.ownserver.local`・`nextcloud.ownserver.local`の3つを登録している．
-この内サブドメインの方はまだアクセスできないが，これらのマルチキャストは後で改めて行う．
-```
+### サーバ証明書の作成
+
+中間CAで `bin/create-server`を実行する。
+`-s`オプションでサーバの説明のような名称を設定、`-a` で使用されるドメインを指定。複数設定できる。
+今回は `ownserver.local`・`www.ownserver.local`・`nextcloud.ownserver.local`の3つを登録している。
+このうちサブドメインの方はまだアクセスできないが、これらのマルチキャストはあとで改めて行う。
+
+```sh
 $ cd own-intermediate-ca/
 $ bin/create-server -s ownserver -a ownserver.local -a www.ownserver.local -a nextcloud.ownserver.local
 省略
 ```
-### 何故か有効期限設定が効かなかった
-```
+
+#### なぜか有効期限設定が効かなかった
+
+```sh
 $ cat bin/templates/server.tpl | grep default_days
 default_days            = 90                       # How long to certify for
 $ openssl x509 -noout -dates -in certs/server/ownserver/ownserver.crt
 notBefore=Nov 13 15:59:20 2021 GMT
 notAfter=Nov 13 15:59:20 2023 GMT
 ```
-90日という設定自体継承されるが，`ca/ca.conf`が反映されたのでこうなった．
-一度削除
-```
+
+90日という設定自体継承されるが、`ca/ca.conf`が反映されたのでこうなった。
+一度削除する。
+
+```sh
 $ ./bin/revoke-cert -c ./certs/server/ownserver/own
 server.crt
 [!] Revoking certificate '/home/gunseikpaseri/ssl/easy-ca/own-root-ca/own-intermediate-ca/certs/server/ownserver/ownserver.crt'
@@ -343,23 +393,27 @@ RSA key ok
 [>] Create csr on pkcs11 device? (key must be in "PIV AUTH key" or 9a) [y/N]: N
 省略
 ```
-消してよかったのかわからないから`ownserver`はとりあえず放置で
 
-完成した証明書と秘密鍵を所定の場所にコピー．
-```
-$ sudo cp certs/server/ownserver-local/ownserver-local.crt /etc/pki/tls/certs/
-$ sudo cp certs/server/ownserver-local/ownserver-local.key /etc/pki/tls/certs/
+消してよかったのかわからないから `ownserver`はとりあえず放置で。
+
+完成した証明書と秘密鍵を所定の場所にコピー。
+
+```sh
+sudo cp certs/server/ownserver-local/ownserver-local.crt /etc/pki/tls/certs/
+sudo cp certs/server/ownserver-local/ownserver-local.key /etc/pki/tls/certs/
 ```
 
+### サーバに証明書を登録
 
-## サーバに証明書を登録
-前項で作ったwebserverをSSLに対応させます．
+前項で作ったwebserverをSSLに対応させます。
+
+```sh
+cd ~/webserver
+docker-compose stop
+vim docker-compose.yml
 ```
-$ cd ~/webserver
-$ docker-compose stop
-$ vim docker-compose.yml
-```
-```diff yml:docker-compose.yml
+
+```diff
 version: '3'
 services:
   web:
@@ -372,15 +426,19 @@ services:
 +     - ./default.conf:/etc/nginx/conf.d/default.conf:ro
 +     - ./certs:/etc/nginx/certs:ro
 ```
-`:ro`は読み込み専用なんだそうな．
+
+`:ro`は読み込み専用なんだそうな。
+
+```sh
+mkdir certs
+cp ~/ssl/easy-ca/own-root-ca/own-intermediate-ca/certs/server/ownserver-local/ownserver-local.crt ./certs/
+cp ~/ssl/easy-ca/own-root-ca/own-intermediate-ca/certs/server/ownserver-local/ownserver-local.key ./certs/
+vim default.conf
 ```
-$ mkdir certs
-$ cp ~/ssl/easy-ca/own-root-ca/own-intermediate-ca/certs/server/ownserver-local/ownserver-local.crt ./certs/
-$ cp ~/ssl/easy-ca/own-root-ca/own-intermediate-ca/certs/server/ownserver-local/ownserver-local.key ./certs/
-$ vim default.conf
-```
+
 秘密鍵深い...!
-``` nginx:default.conf
+
+```nginx:default.conf
 server {
     listen       80;
     listen       443 ssl;
@@ -399,20 +457,24 @@ server {
     }
 }
 ```
-`80`番と`443`番の両方で受け付けるように設定している．
-ファイヤウォールに穴を開けて，実行
-```
-$ sudo ufw allow 443/tcp
-$ docker-compose up -d
-```
-上手く立ち上がらないときは，`docker logs **コンテナ名**`でログを確認できる．
 
+`80`番と `443`番の両方で受け付けるように設定している。
+ファイヤウォールに穴を開けて、実行する。
 
-## ローカル証明書の配布
-先程作った証明書はクライアント側で登録してあげることで初めて使えるようになります．
-ちゃんとしたところならグループポリシーやメールだ何だで配布するのでしょうが，今回はサーバで配布します．（そのために`80`番ポートでも動作するようにしておいた）
-ファイルとしてダウンロードできるように，権限も開放します．
+```sh
+sudo ufw allow 443/tcp
+docker-compose up -d
 ```
+
+うまく立ち上がらないときは、`docker logs **コンテナ名**`でログを確認できる。
+
+### ローカル証明書の配布
+
+先程作った証明書はクライアント側で登録してあげることで初めて使えるようになります。
+ちゃんとしたところならグループポリシーやメールだ何だで配布するのでしょうが、今回はサーバで配布します。（そのために `80`番ポートでも動作するようにしておいた）
+ファイルとしてダウンロードできるように、権限も開放します。
+
+```sh
 $ mkdir -p ./src/certs
 $ cp ./certs/server.crt ./src/certs/ownserver-local.crt
 $ cp ~/ssl/easy-ca/own-root-ca/own-intermediate-ca/ca/ca.crt ./src/certs/own-intermed
@@ -421,7 +483,8 @@ $ cp ~/ssl/easy-ca/own-root-ca/ca/ca.crt ./src/certs/own-root-ca.crt
 $ chmod 644 src/certs/own*
 $ vim src/index.html
 ```
-``` diff html:index.html
+
+```diff
 +                <script>
 +                       if (location.href.indexOf("https") === 0) {
 +                               document.body.insertAdjacentHTML('afterbegin',"<b>SECURE ACCESS!!</b>");
@@ -436,24 +499,23 @@ $ vim src/index.html
 +               </ol>
 ...
 ```
-## ローカル証明書
-インストールします．
-自分のWebサーバを開き，先ほど追加したリンクを上から順にダウンロード・実行してインストールしていきます．
-### Windows
+
+### ローカル証明書
+
+インストールします。
+自分のWebサーバを開き、先ほど追加したリンクを上から順にダウンロード・実行してインストールしていきます。
+
+#### Windows
+
 「証明書のインストール」をクリック
-好きな方にインストールします．
-自動的に決定
+好きな方にインストールします。
+自動的に決定。
 
-ブラウザで認識されているか確認する．
-#### Chrome
-「設定」→「プライバシーとセキュリティ」→「証明書の管理」→
-ルートCA証明書と中間CA→証明書中間証明機関タブ
-サーバ証明書→他の人タブ
+ブラウザで認識されているか確認する。
 
-`https://*domain*/`でアクセスしてみる．
-セキュリティソフトによっては警告が色々出るが無視して通過すると，無事鍵マークのついたHTTPS通信が実現した．
+##### Chrome
 
+「設定」→「プライバシーとセキュリティ」→「セキュリティ」→「証明書の管理」→「windowsからインポートした証明書を管理する」→「ほかの人」タブを開く。
 
-# サーバ証明書作成の自動化
-[TODO]
-
+`https://*domain*/`でアクセスしてみる。
+セキュリティソフトによっては警告がいろいろ出るがこれを無視して通過すると、無事鍵マークのついたHTTPS通信が実現した。

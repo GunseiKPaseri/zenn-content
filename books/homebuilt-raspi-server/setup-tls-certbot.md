@@ -1,30 +1,29 @@
 ---
 title: "SSL/TSLのセットアップ(Certbot編)"
 ---
+## 🤔オレオレ認証の問題点
 
-# オレオレ認証の問題点
+問題点：嫌。
 
-問題点：嫌
+## 🔐Let's Encrypt
 
-# Let's Encrypt
-
-Let's Encrypt はフリーで自動化されたオープンな認証局です．
+Let's Encrypt はフリーで自動化されたオープンな認証局です。
 
 https://letsencrypt.org/ja/
 
-OV(実在証明型)やEV(実在証明拡張型)といった高レベルの証明書を求めず，DV(ドメイン認証)さえ実現できれば良いのであれば，上記でも良い
+OV(実在証明型)やEV(実在証明拡張型)といった高レベルの証明書を求めず、DV(ドメイン認証)さえ実現できればよいならLet's Encryptでも十分です。
 
-# certbot
+## 🤖certbot
 
-Let's Encrypt で証明書を発行するコマンドです．apacheの設定を利用する等の機能を持ちますが，今回はマニュアルモードで発行します
+Let's Encrypt で証明書を発行するコマンドです。apacheの設定を利用する等の機能を持ちますが、今回はマニュアルモードで発行します。
 
+```sh
+cd ~/ssl/certbot/
 ```
-$ cd ~/ssl/certbot/
-```
 
-まずdockerでcertbotを利用してコマンドを作成するファイルを作成
+まずdockerでcertbotを利用してコマンドを作成するファイルを作成。
 
-``` sh:certonly.sh
+```sh:certonly.sh
 #!/bin/bash
 
 docker run \
@@ -45,69 +44,76 @@ docker run \
     -m gunseikpaseri@gmail.com \
     --agree-tos
 ```
-RasPi環境なのでarm64v8を指定する必要がある．必要に応じて変更してあげる．
 
-実行する．処理中に他のコマンドを叩いたり，待ってる間にSSHが切れる可能性もあるため，tmux上での処理を推奨する．
-```
-$ chmod +x certonly.sh
-$ tmux a
-$ ./certonly.sh
+RasPi環境なのでarm64v8を指定する必要がある。必要に応じて変更してあげる。
+
+実行する。処理中に他のコマンドを叩いたり、待ってる間にSSHが切れる可能性もあるため、tmux上での処理を推奨する。
+
+```sh
+chmod +x certonly.sh
+tmux a
+./certonly.sh
 ```
 
-正常に起動すると，作成のコンソールが出てくる．
->Would you be willing, ...
-Let'sEncryptに関するお知らせを購読するためにメルアドを登録するか？`N`で良い
->Please deploy a DNS TXT record under the name:
+正常に起動すると、作成のコンソールが出てくる。
+
+> Would you be willing, ...
+> Let'sEncryptに関するお知らせを購読するためにメルアドを登録するか？`N`でよい。
+> Please deploy a DNS TXT record under the name:
 >
->_acme-challenge.gunseikpaseri.cf.
+> _acme-challenge.gunseikpaseri.cf.
 >
->with the following value:
+> with the following value:
 >
->XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-ここで出力されたコードをDNSのTXTレコードに登録する
+ここで出力されたコードをDNSのTXTレコードに登録する。
 
-自分はfreenomのDNSサーバを利用しているため，freenomのサイトに移動し，Service>MyDomainsを選択
-自分のドメインについてManageDomainを開く
-ManageFreenomDNSタブを開く
+自分はfreenomのDNSサーバを利用しているため、freenomのサイトに移動し、Service>MyDomainsを選択
+自分のドメインについてManageDomainを開く。
+ManageFreenomDNSタブを開く。
 
-Add Recodesに以下のように指定
-|Name|Type|TTL|Target|
-|:-------------:|:--:|:--:|:----:|
-|_acme-challenge|TXT |3600|(例のコード)|
+Add Recodesに以下のように指定。
 
-tmux等を利用して別ウィンドウで以下のコマンドで先程指定した値が取得できるようになるのを待つ．
+|      Name      | Type | TTL |    Target    |
+| :-------------: | :--: | :--: | :----------: |
+| _acme-challenge | TXT | 3600 | (例のコード) |
+
+tmux等を利用して別ウィンドウで以下のコマンドで先程指定した値が取得できるようになるのを待つ。
+
+```sh
+nslookup -type=TXT _acme-challenge.local.gunseikpaseri.cf 8.8.8.8
 ```
-$ nslookup -type=TXT _acme-challenge.local.gunseikpaseri.cf 8.8.8.8
-```
 
-ここでEnterを入力するともう一つ入力が求められる．（求めるドメインの数だけ入力する必要がある様子）
-新しいレコードをまた追加し，同様に取得できるようになるまで待ち，Enterを入力．
+ここでEnterを入力するともう1つ入力が求められる。（求めるドメインの数だけ入力する必要がある様子）
+新しいレコードをまた追加し、同様に取得できるようになるまで待ち、Enterを入力。
 
-成功するとディレクトリ下に作成される．
-この時所有権がrootになっていることに注意する．
-```
+成功するとディレクトリ下に作成される。
+このとき所有権がrootになっていることに注意する。
+
+```sh
 $ sudo ls letsencrypt/live/gunseikpaseri.cf
 README  cert.pem  chain.pem  fullchain.pem  privkey.pem
 ```
 
-# 反映
+## 🔐反映
 
-リバースプロキシを停止
+リバースプロキシを停止。
 
-tmuxを利用している時は`Ctrl+b`+`s`で移動，docker-composeをctrl+c
+tmuxを利用しているときは `Ctrl+b`+`s`で移動、docker-composeで稼働中のコンテナを `ctrl+c`で停止する。
 
-既存のものを除去
+既存のものを除去。
+
+```sh
+cd ~/reverseproxy/certs
+mkdir old
+mv ownserver-local.crt old/
+mv ownserver-local.key old/
 ```
-$ cd ~/reverseproxy/certs
-$ mkdir old
-$ mv ownserver-local.crt old/
-$ mv ownserver-local.key old/
-```
 
-コピーして所有権を自分のものにして前の物に置き換える
+コピーして所有権を自分のものにして前のものに置き換える。
 
-``` sh:copycert.sh
+```sh:copycert.sh
 #!/bin/bash
 cp /home/"$SUDO_USER"/ssl/certbot/letsencrypt/live/local.gunseikpaseri.cf/fullchain.pem ./ownserver-local.crt
 cp /home/"$SUDO_USER"/ssl/certbot/letsencrypt/live/local.gunseikpaseri.cf/privkey.pem ./ownserver-local.key
@@ -115,19 +121,19 @@ chown $SUDO_USER:$SUDO_USER ./ownserver-local.crt
 chown $SUDO_USER:$SUDO_USER ./ownserver-local.key
 ```
 
+```sh
+sudo ./copycert.sh
 ```
-$ sudo ./copycert.sh
-```
 
-最後にリバースプロキシを起動する
+最後にリバースプロキシを起動する。
 
-各サブドメインに正常にアクセスできるか確認する
+各サブドメインに正常にアクセスできるか確認する。
 
-最後に，WebサーバからCA証明書のDLリンクを削除する．
+最後に、WebサーバからCA証明書のDLリンクを削除する。
 
-## 更新
+### 🆙更新
 
-``` sh:renew.sh
+```sh:renew.sh
 #!/bin/bash
 ./certonly.sh
 docker run \
@@ -147,11 +153,11 @@ docker run \
     --manual-auth-hook /auth/hook.sh
 ```
 
-直下に`auth`ディレクトリを作成
+直下に `auth`ディレクトリを作成。
 
-root権限で以下のファイルを作成
+root権限で以下のファイルを作成。
 
-``` sh:auth/hook.sh
+```sh:auth/hook.sh
 #!/bin/bash 
 echo "$CERTBOT_VALIDATION" > /auth/validation_token
 sleep 300
@@ -159,11 +165,11 @@ sleep 300
 
 以下のコマンドを実行すると、authディレクトリに認証トークンが出力される。
 5分以内にこの内容をDNSのTXTフィールドに反映させる。
-```
-$ chmod +x renew.sh
-$ tmux a
-$ sudo ./renew.sh
+
+```sh
+chmod +x renew.sh
+tmux a
+sudo ./renew.sh
 ```
 
-んーでもあんまり上手く動かないな
-
+んーでもあんまりうまく動かないな。

@@ -1,97 +1,104 @@
 ---
 title: "付録：コマンド逆引き"
 ---
-
-# コマンドの逆引きが欲しい
+## 🖥️コマンドの逆引きが欲しい
 
 欲しい…ほしくない？
 コマンドなんて覚えられんもん
-ただ，全部のせたらヤバいので，使用したものの内，繰り返し使用しそうなものを列挙
+ただ、全部のせたらヤバいので、使用したものの中で繰り返し使用しそうなものを列挙する。
 
-## Ubuntuの操作
+### Ubuntuの操作
 
-### ホスト名の取得
+#### ホスト名の取得
 
-```
-$ hostname
-```
-
-### シャットダウン
-
-```
-$ shutdown -r now
+```sh
+hostname
 ```
 
-### 再起動
-```
-$ sudo reboot
+#### シャットダウン
+
+```sh
+shutdown -r now
 ```
 
-## DNS・ドメイン周辺
+#### 再起動
 
-### ファイヤウォールの状態確認
-
-```
-$ sudo ufw status verbose
+```sh
+sudo reboot
 ```
 
-### DNS正引き
+### DNS・ドメイン周辺
 
+#### ファイヤウォールの状態確認
+
+```sh
+sudo ufw status verbose
 ```
-$ dig *DOMAIN*. @*DNSServer*
-or
-$ dig *DOMAIN*. @224.0.0.251 -p 5353
-or
-$ avahi-resolve -n *DOMAIN*
+
+#### DNS正引き
+
+```sh
+dig *DOMAIN*. @*DNSServer*
 ```
+
+```sh
+dig *DOMAIN*. @224.0.0.251 -p 5353
+```
+
+```sh
+avahi-resolve -n *DOMAIN*
+```
+
+`*DOMAIN*`：対象ドメインを指す。
+
+#### DNS逆引き
+
+```sh
+dig -x *IP* @224.0.0.251 -p *PORT*
+avahi-resolve -a *IP*
+```
+
 `*DOMAIN*`：対象ドメイン
-### DNS逆引き
+`*PORT*`：リゾルバのポート（通常 `53`、mDNSなら `5353`）
 
-```
-$ dig -x *IP* @224.0.0.251 -p *PORT*
-$ avahi-resolve -a *IP*
-```
-`*DOMAIN*`：対象ドメイン
-`*PORT*`：リゾルバのポート（通常`53`，mDNSなら`5353`）
+#### ポートの利用状況確認
 
-### ポートの利用状況確認
-
-```
-$ sudo lsof -i:*PORT*
+```sh
+sudo lsof -i:*PORT*
 ```
 
-`*PORT*`：確認対象ポート
+`*PORT*`：確認対象ポートを指す。
 
-## SSH関係
+### SSH関係
 
-### 接続
+#### 接続
 
-```
-$ ssh {user}@{host} -p {port}
-```
-
-|オプション|概要|
-|----------|------------------|
-|`{user}`  |ログイン先ユーザ名|
-|`{host}`  |ログイン先ホスト名|
-|`{port}`  |ポート番号|
-
-## docker周辺
-
-### 起動イメージの一覧
-
-```
-$ docker ps
+```sh
+ssh {user}@{host} -p {port}
 ```
 
-### イメージのログ出力
+| オプション | 概要               |
+| ---------- | ------------------ |
+| `{user}` | ログイン先ユーザ名 |
+| `{host}` | ログイン先ホスト名 |
+| `{port}` | ポート番号         |
 
-```
-$ docker logs *CONTAINER ID|NAMES*
+### docker周辺
+
+#### 起動イメージの一覧
+
+```sh
+docker ps
 ```
 
-### 起動中のコンテナシェルの実行
-```
-$ docker exec -i -t *CONTAINER ID* /bin/bash
+#### イメージのログ出力
+
+```sh
+docker logs *CONTAINER ID|NAMES*
 ```
 
+#### 起動中のコンテナシェルの実行
+
+```sh
+docker exec -i -t *CONTAINER ID* /bin/bash
+```

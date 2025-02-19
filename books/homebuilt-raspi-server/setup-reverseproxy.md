@@ -2,18 +2,18 @@
 title: "Dockerでリバースプロキシ"
 ---
 
-## Dockerでリバースプロキシの起動
+## ◀️Dockerでリバースプロキシの起動
 
-DNSの項目で様々なサブドメインから自分のサーバのIPアドレスに変換し，アクセスを集中させることができるようになりました．
-では，このアクセスをどうそれぞれのアプリケーションに配るか，という話になります．
+DNSの項目で様々なサブドメインから自分のサーバのIPアドレスに変換し、アクセスを集中させることができるようになりました。
+では、このアクセスをどうそれぞれのアプリケーションに配るか、という話になります。
 
-今回，公開するウェブページを各コンテナ間で接続，相互に名前接続をし，名前解決・リバースプロキシを行う，という方針で行います
+今回、公開するウェブページを各コンテナ間で接続、相互に名前接続をし、名前解決・リバースプロキシを行う、という方針で行います。
 
-### リバースプロキシ用のコンテナの作成
+### 🐋リバースプロキシ用のコンテナの作成
 
-まず，利用するdockerネットワークを作成します．
+まず、利用するdockerネットワークを作成します。
 
-```
+```sh
 $ docker network create --driver bridge public_networks
 $ docker network ls
 NETWORK ID     NAME                DRIVER    SCOPE
@@ -79,18 +79,18 @@ http {
 }
 ```
 
-いずれにもマッチしないような場合にはdefault_serverに飛びます．
+いずれにもマッチしないような場合にはdefault_serverに飛びます。
 
-`proxy_pass`のURLは`www`有りですが，これはdocker内部用の別の名前解決（WebServer側で後で設定する）により行われています．
-そのため，対外的にはwww無しに統一，内部ではwww.local.gunseikpaseri.cfに転送という若干ややこしい構成になっています
+`proxy_pass`のURLは`www`有りですが、これはdocker内部用の別の名前解決（WebServer側からあとで設定する）により行われています。
+そのため、対外的にはwww無しに統一、内部ではwww.local.gunseikpaseri.cfに転送という若干ややこしい構成になっています。
 
-今回練習向け・HTTP接続で証明書をDLできる（最悪）ようにするために，http->httpsのリダイレクトは設置していませんが，できればそれも行うことができると良いでしょう
+今回練習向け・HTTP接続で証明書をDLできる（最悪）ようにするため、http->httpsのリダイレクトは設置していません。できればそれも行うことができるとよいでしょう。
 
-### リバースプロキシ向けの設定変更
+### ⚙リバースプロキシ向けの設定変更
 
-今回の変更に伴い，今までのネットワーク設定を変更していきます
+今回の変更に伴い、今までのネットワーク設定を変更していきます。
 
-#### WebServer
+#### 🌐WebServer
 
 ``` diff yml:webserver/docker-compose.yml
 version: "3"
@@ -116,8 +116,8 @@ services:
 +     name: public_networks
 ```
 
-`networks.public.aliases`のところの`www.local.gunseikpaseri.cf`は，Docker内部DNS向けの名前解決（つまり，リバースプロキシで利用する名前）です．
-DNSサーバによる名前解決ではなくこちらが実行されます．
+`networks.public.aliases`のところの`www.local.gunseikpaseri.cf`は、Docker内部DNS向けの名前解決（つまり、リバースプロキシで利用する名前）です。
+DNSサーバによる名前解決ではなくこちらが実行されます。
 
 ``` diff nginx:webserver/default.conf
 server {
@@ -139,11 +139,11 @@ server {
 }
 ```
 
-この状態で，webserverとreverse-proxyを`docker-compose up -d`すると，http://www.local.gunseikpaseri.cf/ https://www.local.gunseikpaseri.cf/ の両方が解決できるようになり，http://local.gunseikpaseri.cf/ または https://local.gunseikpaseri.cf/ にリダイレクトされ，そのページが表示されます．俺だけ．
+この状態でwebserverとreverse-proxyを`docker-compose up -d`すると、http://www.local.gunseikpaseri.cf/ https://www.local.gunseikpaseri.cf/ の両方が解決できるようになり、http://local.gunseikpaseri.cf/ または https://local.gunseikpaseri.cf/ にリダイレクトされ、そのページが表示されます。自分だけ。
 
-#### NextCloud
+#### ☁NextCloud
 
-HTTPS関連をリバースプロキシが担当するので，ここのnginxコンテナは不要になる
+HTTPS関連をリバースプロキシが担当するので、ここのnginxコンテナは不要になります。
 
 ``` diff yml:nextcloud/docker-compose.yml
 ...
@@ -196,7 +196,7 @@ services:
 +     name: public_networks
 ```
 
-`public_networks`には`app`のコンテナだけが触れれば良く，`db`との通信は`private`で行うようにする．
+`public_networks`には`app`のコンテナだけが触れればよく、`db`との通信は`private`で行うようにする。
 
 ``` nginx:reverseproxy/nginx.conf
 ...
@@ -231,11 +231,12 @@ http {
 }
 ```
 
-`client_max_body_size`オプションは転送可能なファイルサイズ最大量になります．デフォルトでは1M，つまり1MBなのでこれより大きな画像ファイル等が転送できません．使用状況に合わせて設定してあげましょう．
+`client_max_body_size`オプションは転送可能なファイルサイズ最大量になります。デフォルトでは1M、つまり1MBなのでこれより大きな画像ファイル等が転送できません。使用状況に合わせて設定してあげましょう。
 
-この状態で，https://nextcloud.local.gunseikpaseri.cf を開くことはできますが，信頼できないドメインを介したアクセスと怒られます．
-ここで言われている`config/config.php`は`/mnt/hdd/nextcloud/html/config/config.php`で操作できます．
-以下のように変更します．
+この状態で、https://nextcloud.local.gunseikpaseri.cf を開くことはできますが、信頼できないドメインを介したアクセスと怒られます。
+ここで言われている`config/config.php`は`/mnt/hdd/nextcloud/html/config/config.php`で操作できます。
+以下のように変更します。
+
 ``` diff php:config/config.php
   'trusted_domains' =>
   array (
@@ -248,33 +249,37 @@ http {
 + 'overwrite.cli.url' => 'https://nextcloud.local.gunseikpaseri.cf',
 ```
 
-`overwrite.cli.url`は，activityページ等のURLで自動に置き換えられている箇所です．
+`overwrite.cli.url`は、activityページ等のURLで自動に置き換えられている箇所です。
 
-これで正常に動作するはずである．正常に動作しなくなったときは，このページがデフォルト状態に戻ったときなので，都度直してあげれば良い．
+これで正常に動作するはずです。正常に動作しなくなったときは、このページがデフォルト状態に戻ったときなので、都度直してあげればよいです。
 
 ### 必要のないポートを閉じる
-必要なくなったポートは，閉じてしまう
 
-```
-$ sudo ufw deny 8080
+必要なくなったポートは、閉じてしまう。
+
+```sh
+sudo ufw deny 8080
 ```
 
-# http3 対応
-```
-$ sudo ufw allow 443/udp
+# 3⃣http3 対応
+
+```sh
+sudo ufw allow 443/udp
 ```
 
 対応したHTTP3コンテナを利用
 公開されたコンテナはraspi環境非対応なので手元でビルドする。
-```
-$ cd ~/workspace/
-$ git clone https://github.com/macbre/docker-nginx-http3.git
-$ cd docker-nginx-http3
-$ docker pull ghcr.io/macbre/nginx-http3:latest
-$ DOCKER_BUILDKIT=1 docker build . -t macbre/nginx --cache-from=ghcr.io/macbre/nginx-http3:latest --progress=plain
+
+```sh
+cd ~/workspace/
+git clone https://github.com/macbre/docker-nginx-http3.git
+cd docker-nginx-http3
+docker pull ghcr.io/macbre/nginx-http3:latest
+DOCKER_BUILDKIT=1 docker build . -t macbre/nginx --cache-from=ghcr.io/macbre/nginx-http3:latest --progress=plain
 ```
 
 各ファイルを修正する。
+
 ``` diff yml: docker-compose.yml
   reverse-proxy:
 -   image: nginx:latest
@@ -305,16 +310,16 @@ $ DOCKER_BUILDKIT=1 docker build . -t macbre/nginx --cache-from=ghcr.io/macbre/n
         }
     }
 ```
+
 各サーバについても同様に設定する。
-この時、IPアドレス:ポート番号の対比に対して`reuseport`は1つのサーバにのみにしか設定できないため、バーチャルホスト環境でのポート番号を変更する必要がある。
-この時、Dockerでの利用ポート・ヘッダ指定・portsを変更し、ファイヤウォールを開放する必要がある。
+このとき、IPアドレス:ポート番号の対比に対して`reuseport`は1つのサーバにのみにしか設定できないため、バーチャルホスト環境でのポート番号を変更する必要がある。
+また、Dockerでの利用ポート・ヘッダ指定・portsを変更し、ファイヤウォールを開放する必要がある。
+利用するポートはウェルノウンポートを避けるべきだろう。
 
-この時利用するポートはウェルノウンポートは避けるべきだろう。
+再度起動します。
 
-
-再度立ち上げる
+```sh
+docker-compose up
 ```
-$ docker-compose up
-```
 
-初回はhttp2かも知れないが、二回目はhttp3通信を行うようになっている
+初回はhttp2かも知れないが、2回目はhttp3通信をするようになっている。
