@@ -194,7 +194,6 @@ Error response from daemon: failed to create endpoint nextcloud-db-1 on network 
 
 うまくいかなければ、`docker-compose logs`でログを見たり、`docker ps`でコンテナIDを取得して、`docker exec -i -t *CONTAINER_ID* /bin/bash`でシェルを操作したりできます。
 
-
 起動できると、`https:*domain*:8080`でNextCloudの設定画面になります。
 
 データフォルダは、すでにdocker-composeでマウントしているのでそのまま。

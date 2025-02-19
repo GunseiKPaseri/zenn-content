@@ -10,16 +10,7 @@
       "sentence-length": false,
       // 軽いノリの技術文書なので感嘆符・疑問符を許可
       "no-exclamation-question-mark": false,
-      // zenn構文用に「:」を許可
-      "ja-no-mixed-period": {
-        "allowPeriodMarks": [
-          "…",
-          ":",
-          "～",
-          "！",
-          "|"
-        ]
-      },
+      "ja-no-mixed-period": false,
       // 点線は重ねて良い。
       "ja-no-successive-word": {
         "allow": ["…"]

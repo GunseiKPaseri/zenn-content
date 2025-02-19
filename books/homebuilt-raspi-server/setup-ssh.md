@@ -249,7 +249,7 @@ chown *username*:*username* .ssh
 この段階で、以下のコマンドで接続できるようになっているかと思います。
 
 ```sh
-$ ssh *username*@*domain* -i *path to private key* -p *port*
+ssh *username*@*domain* -i *path to private key* -p *port*
 ```
 
 #### ⚙接続設定の記述
@@ -283,7 +283,7 @@ The man who has no imagination has no wings.
 ```
 
 > 想像力がないやつは翼が持てない
->      ---- ムハンマド・アリ（1942-2016）
+> ムハンマド・アリ（1942-2016）
 
 君の好きな格言を入れてかっこいい感じにしましょう。
 

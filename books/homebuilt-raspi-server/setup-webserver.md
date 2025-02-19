@@ -57,9 +57,9 @@ docker: Error response from daemon: failed to create endpoint jovial_almeida on 
 まず、なんかいろいろな情報が表示できるWebサーバを立てておきましょうか。とりあえずnginxにしとく？
 
 ```sh
-$ mkdir webserver
-$ mkdir webserver/
-$ vim webserver/docker-compose.yml
+mkdir webserver
+mkdir webserver/
+vim webserver/docker-compose.yml
 ```
 
 ```yml:docker-compose.yml

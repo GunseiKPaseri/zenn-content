@@ -47,7 +47,7 @@ Consistency Policy : bitmap
 
 ## ❕docker-composeしたのにコンテナが無い！
 
-```
+```sh
 $ docker-compose up -d
 [+] Running 1/1
  ⠿ Container reverseproxy-reverse-proxy-1  Started

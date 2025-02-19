@@ -4,8 +4,8 @@
   "description": "https://zenn.dev/gunseikpaseri",
   "main": "index.js",
   "scripts": {
-    "fmt": "npx textlint articles/ --fix && npx markdownlint-cli2 articles/ --fix",
-    "lint": "npx textlint articles/ books/ && npx markdownlint-cli2 articles/ && npx markdownlint-cli2 books/",
+    "fmt": "npx textlint articles/ --fix && npx markdownlint-cli2 {articles,books}/**/*.md --fix",
+    "lint": "npx textlint articles/ books/ && npx markdownlint-cli2 {articles,books}/**/*.md",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
