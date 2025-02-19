@@ -1,7 +1,7 @@
-title: "自宅サーバ立ててみた"
+title: "ラズパイで自宅サーバを立ててみる本"
 summary: "一家に一台自宅サーバ！　あなたのお宅にも一台どうです？"
-topics: ["無料で読める本", "raspberrypi"]
-published: false
+topics: ["Linux", "ubuntu", "raspberrypi", "サーバ構築", "自宅サーバ"]
+published: true
 price: 0 # 有料の場合200〜5000
 # 本に含めるチャプターを順番に並べましょう
 chapters:
